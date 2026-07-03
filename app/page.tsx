@@ -1,101 +1,134 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useMemo } from 'react'
+import CalculatorSidebar from '../src/components/CalculatorSidebar'
+import PricingTable from '../src/components/PricingTable'
+import RecommendationCard from '../src/components/RecommendationCard'
+import { modelPricingData } from '../src/data/models'
+import { CalculatorInput, CalculatedCost } from '../src/types/pricing'
+import { calculateCost } from '../src/utils/calculator'
+import { formatCurrency } from '../src/utils/calculator'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [input, setInput] = useState<CalculatorInput>({
+    dailyInputTokens: 1000000,
+    dailyOutputTokens: 500000,
+    cacheHitRatio: 0.5,
+    daysPerMonth: 22,
+  })
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const costs: CalculatedCost[] = useMemo(() => {
+    return modelPricingData.map(model => calculateCost(model, input))
+  }, [input])
+
+  const totalMonthlyCost = costs.reduce((sum, c) => sum + c.monthlyCost, 0)
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">AI</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">AI API 比价计算器</h1>
+                <p className="text-sm text-gray-500">快速对比主流大模型 API 成本</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm text-gray-500">全部模型月费用</div>
+                <div className="text-lg font-semibold text-gray-900">¥{formatCurrency(totalMonthlyCost)}/月</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">价格对比表</h2>
+                <span className="text-sm text-gray-500">
+                  共 {modelPricingData.length} 个模型
+                </span>
+              </div>
+              <PricingTable 
+                costs={costs} 
+                dailyInputTokens={input.dailyInputTokens}
+                dailyOutputTokens={input.dailyOutputTokens}
+              />
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">模型详情</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {modelPricingData.map((model) => (
+                  <div key={model.id} className="border border-gray-100 rounded-lg p-4 hover:border-blue-200 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-gray-900">{model.name}</span>
+                      <span 
+                        className="px-2 py-0.5 rounded text-xs font-medium"
+                        style={{ backgroundColor: `${model.providerColor}15`, color: model.providerColor }}
+                      >
+                        {model.provider}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-3">{model.description}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {model.features.map((feature) => (
+                        <span key={feature} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">输入</span>
+                        <span className="font-medium">¥{model.inputPrice}/百万 Tokens</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">输出</span>
+                        <span className="font-medium">¥{model.outputPrice}/百万 Tokens</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">上下文</span>
+                        <span className="font-medium">{(model.contextWindow / 1000).toFixed(0)}K</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <CalculatorSidebar input={input} onChange={setInput} />
+            <RecommendationCard costs={costs} />
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">使用说明</h3>
+              <ul className="text-sm text-gray-600 space-y-2">
+                <li>• 输入您的日均 Token 用量，系统自动计算各模型费用</li>
+                <li>• 展开高级选项可设置缓存命中率和使用天数</li>
+                <li>• 缓存命中率越高，支持缓存的模型成本越低</li>
+                <li>• 价格仅供参考，请以各厂商官方定价为准</li>
+              </ul>
+            </div>
+
+            <div className="bg-gray-100 rounded-xl p-4">
+              <p className="text-xs text-gray-500 text-center">
+                数据更新时间: 2026年7月<br/>
+                覆盖模型: DeepSeek、豆包、Qwen、GLM、MiniMax、Kimi、Claude、GPT、Gemini
+              </p>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
-  );
+  )
 }
