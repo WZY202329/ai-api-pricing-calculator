@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+AI API 比价计算器
+===
 
-## Getting Started
+一个用于快速对比主流大模型 API 成本的计算器工具。
 
-First, run the development server:
+功能特性
+---
+
+- 支持多种大模型（豆包、GLM、DeepSeek、Qwen、MiniMax、Kimi、Claude、GPT、Gemini 等）
+- 输入日均 Token 用量，自动计算各模型月费用
+- 支持缓存命中率设置，展示缓存节省效果
+- 实时价格对比表，按成本排序
+- 推荐最具性价比的模型方案
+
+技术栈
+---
+
+- Next.js 14
+- React 18
+- TypeScript
+- Tailwind CSS 3
+
+快速开始
+---
+
+### 安装依赖
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 启动开发服务器
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+打开 [http://localhost:3000](http://localhost:3000) 查看效果。
 
-## Learn More
+### 构建生产版本
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+项目结构
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+.
+├── app/                    # Next.js 应用目录
+│   ├── layout.tsx         # 根布局
+│   ├── page.tsx           # 首页
+│   └── globals.css        # 全局样式
+├── src/                   # 源代码
+│   ├── components/        # 组件
+│   │   ├── CalculatorSidebar.tsx  # 费用计算器侧边栏
+│   │   ├── PricingTable.tsx       # 价格对比表
+│   │   └── RecommendationCard.tsx # 推荐卡片
+│   ├── data/              # 数据
+│   │   └── models.ts      # 模型定价数据
+│   ├── types/             # 类型定义
+│   │   └── pricing.ts     # 定价相关类型
+│   └── utils/             # 工具函数
+│       └── calculator.ts  # 费用计算逻辑
+└── package.json
+```
 
-## Deploy on Vercel
+使用说明
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. 输入日均输入/输出 Token 用量
+2. 可选设置缓存命中率和每月使用天数
+3. 系统自动计算各模型费用并按成本排序
+4. 查看推荐的最具性价比方案
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+价格仅供参考，请以各厂商官方定价为准。
